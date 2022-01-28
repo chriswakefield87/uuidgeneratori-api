@@ -12,7 +12,31 @@ app.get('/', (req, res) => {
     res.json('Welcome to my mindfulness quotes API');
 })
 
-app.get('/quote', (req, res) => {
+app.get('/random', (req, res) => {
+    axios.get('https://wisdomquotes.com/mindfulness-quotes/')
+        .then((response) => {
+            const html = response.data;
+            const $ = cheerio.load(html);
+
+            $('blockquote:contains()', html).each(function () {
+                const quoteraw = $(this).text();
+                const quote = quoteraw.substring(0, quoteraw.lastIndexOf(".") + 1);
+                let author = quoteraw.substring(quoteraw.lastIndexOf('.') + 2);
+                author = (author.replace("Click to tweet", "")).trim();
+                quotes.push({
+                    quote,
+                    author
+                })
+            })
+
+            const values = Object.values(quotes);
+            const quote = values[Math.floor(Math.random() * values.length)];
+            res.json(quote);
+
+        }).catch((err) => console.log(err));
+})
+
+app.get('/all', (req, res) => {
     axios.get('https://wisdomquotes.com/mindfulness-quotes/')
         .then((response) => {
             const html = response.data;
@@ -29,6 +53,7 @@ app.get('/quote', (req, res) => {
                 })
             })
             res.json(quotes);
+            
         }).catch((err) => console.log(err));
 })
 
